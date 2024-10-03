@@ -1,0 +1,93 @@
+# Indigo4L
+# SC1721
+
+d 1
+d 2
+d 3
+d 4
+
+fncCall                                   #name:TIME_MEASURE_START_SET1#
+
+##########################################################################
+
+###expected CRC Value for EEPROM
+i4write 32 0x60123064 0x3D125972               #CRC32/IEEE802.3 – Default#RIBIT=1/RIBYT=1/ROBIT=1/ROBYT=1#register:0x0002700C
+#i4write 32 0x6012301C 0xA0C07EDD               #CRC32/BZIP2    – Optional#RIBIT=0/RIBYT=1/ROBIT=0/ROBYT=0#register:0x0002700C
+
+### Check the CRCCFG.LOCK  ###
+i4label
+i4drget 32 0x0002700C                          #path:INDIGO4L.PRGCRC.CRCCFG#
+i4drand 0x10000000
+i4drcheck 0
+i4loop
+
+### Set the Configure ###
+i4write 32 0x00027000 0x04C11DB7               #path:INDIGO4L.PRGCRC.CRCPOLY#
+i4write 32 0x00027004 0xFFFFFFFF               #path:INDIGO4L.PRGCRC.CRCSEED#
+i4write 32 0x00027008 0xFFFFFFFF               #path:INDIGO4L.PRGCRC.CRCFXOR#
+i4write 32 0x0002700C 0x00E00F01               #path:INDIGO4L.PRGCRC.CRCCFG##0x00E00F01#0x00E00401
+
+### 0x617C1000-0x617EFFFF of I-flash memory sector 2...
+i4drload 0x617C2000
+i4drsave 0
+
+i4label
+### Data input to the CRC calculator ###
+i4drrestore 0
+i4peek 32
+i4drput 32 0x00027010                           #path:INDIGO4L.PRGCRC.CRCWR#
+i4drrestore 0
+i4inc4
+i4drsave 0
+i4bufcheck 0 0x617EFFFC
+i4loop
+###Final address value insert...
+i4drrestore 0
+i4peek 32
+i4drput 32 0x00027010                           #path:INDIGO4L.PRGCRC.CRCWR#
+
+### save the CRC result in 0x60123064 ###
+i4drget 32 0x00027014                           #path:INDIGO4L.PRGCRC.CRCRD#
+i4drput 32 0x60123060
+
+
+### CRC result comparison
+i4drget 32 0x60123060
+i4drget 32 0x60123064
+i4jumprdr1equal0 5
+i4write 32 0x60123068 0x11111111
+i4jumpr 4
+i4write 32 0x60123068 0x22222222
+d 1
+
+fncCall                                   #name:TIME_MEASURE_END_SET1#
+
+###########################################################################
+fncBegin                                   #name:TIME_MEASURE_START_SET1#
+############################
+### TIME MEASURE - START ###
+############################
+# required checking time in microseconds ...
+i4write 32 0x60123080 0x00000000
+i4systime
+i4drput 32 0x60123080
+fncEnd                                     #name:TIME_MEASURE_START_SET1#
+
+###########################################################################
+fncBegin                                   #name:TIME_MEASURE_END_SET1#
+##########################
+### TIME MEASURE - END ###
+##########################
+i4systime                  #dreg0
+i4drget 32 0x60123080      #dreg0 -> dreg1, dreg0
+i4sub                      #dreg0=dreg1-dreg0
+i4abs                      #absolute(dreg0)
+# STORE MEASURE TIME
+i4drput 32 0x60123080
+fncEnd                                     #name:TIME_MEASURE_END_SET1#
+
+  
+i4end
+e
+
+

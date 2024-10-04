@@ -1,0 +1,60 @@
+# Indigo4L
+# SC1721
+
+## 테스트용 기입 - 240915 
+wf32 0x60000000 0 3 4 
+i4drload 0x00000000
+rf32    0x00098050  16   12     # ADC.RANGE_0 : upper threshold 
+i4jumprdr1greaterequal0 4       # IF DREG1 >= DREG0 
+##
+
+
+d 1
+d 2
+d 3
+d 4
+
+i4fill 0x60000000 0x00000000 40
+
+i4systime
+i4drput 32 0x60000000
+
+d 100
+
+i4drget 32 0x60000000
+i4systime
+i4drput 32 0x60000000
+
+# STORE MEASURE TIME
+i4sub
+i4abs
+i4drput 32 0x60000008
+
+i4systime
+i4drput 32 0x60000020
+
+d 5
+
+i4systime
+i4drput 32 0x60000040
+
+d 5
+
+i4systime
+i4drput 32 0x60000060
+
+d 5
+
+i4systime
+i4drput 32 0x60000080
+
+
+d 4
+d 3
+d 2
+d 1
+  
+i4end
+e
+
+
